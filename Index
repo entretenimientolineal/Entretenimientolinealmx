@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🇲🇽 BINGO MEXICANO - Sistema de Reservas</title>
+    <style>
+        :root {
+            --mexico-green: #006341;
+            --mexico-white: #FFFFFF;
+            --mexico-red: #C8102E;
+            --gold-mexico: #D4AF37;
+            --dark-green: #004c35;
+            --dark-red: #8a0b23;
+            --light-green: #e8f5e9;
+            --light-red: #ffebee;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #fef9e7, #f8f9fa, #fff3e0);
+            background-attachment: fixed;
+            color: #2c3e50;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                rgba(0, 99, 65, 0.03) 0%, 
+                rgba(0, 99, 65, 0.03) 33.33%,
+                rgba(255, 255, 255, 0.03) 33.33%,
+                rgba(255, 255, 255, 0.03) 66.66%,
+                rgba(200, 16, 46, 0.03) 66.66%,
+                rgba(200, 16, 46, 0.03) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--mexico-green), var(--dark-green));
+            color: white;
+            padding: 40px 0 30px 0;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0, 99, 65, 0.3);
+            border: 3px solid var(--gold-mexico);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.1) 33.33%,
+                rgba(200, 16, 46, 0.1) 33.33%,
+                rgba(200, 16, 46, 0.1) 66.66%,
+                rgba(0, 99, 65, 0.1) 66.66%,
+                rgba(0, 99, 65, 0.1) 100%);
+            pointer-events: none;
+        }
+        
+        .header-emojis {
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 1.5rem;
+            opacity: 0.9;
+            color: white;
+            z-index: 2;
+        }
+        
+        .admin-access-btn {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid var(--gold-mexico);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+            color: var(--gold-mexico);
+            backdrop-filter: blur(5px);
+        }
+        
+        .admin-access-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 0 20px var(--gold-mexico);
+        }
+        
+        .sync-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: var(--gold-mexico);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border: 1px solid white;
+            color: var(--mexico-green);
+            font-weight: 600;
+        }
+        
+        .sync-status.connected {
+            background: var(--mexico-green);
+            color: white;
+        }
+        
+        .sync-status.disconnected {
+            background: var(--mexico-red);
+            color: white;
+        }
+        
+        .sync-status.error {
+            background: var(--mexico-red);
+            color: white;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            text-shadow: 3px 3px 0 rgba(0, 99, 65, 0.3);
+            letter-spacing: 2px;
+            color: white;
+            margin-top: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .subtitle {
+            font-size: 1.4rem;
+            font-weight: 300;
+            opacity: 0.95;
+            color: white;
+            position: relative;
+            z-index: 2;
+        }
+        
+        h2 {
+            color: var(--mexico-green);
+            border-bottom: 3px solid;
+            border-image: linear-gradient(to right, var(--mexico-green), var(--mexico-white), var(--mexico-red)) 1;
+            padding-bottom: 10px;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 15px rgba(0, 99, 65, 0.1);
+            transition: transform 0.3s;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 99, 65, 0.2);
+            color: #2c3e50;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 99, 65, 0.2);
+        }
+        
+        .admin-section {
+            border-top: 5px solid var(--mexico-red);
+            background: linear-gradient(135deg, white, var(--light-red));
+        }
+        
+        .user-section {
+            border-top: 5px solid var(--mexico-green);
+            background: linear-gradient(135deg, white, var(--light-green));
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--mexico-green);
+        }
+        
+        input, select, button, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            color: #2c3e50;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--mexico-green);
+            box-shadow: 0 0 0 3px rgba(0, 99, 65, 0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--mexico-green), var(--dark-green));
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, var(--dark-green), var(--mexico-green));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 99, 65, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--mexico-green), var(--dark-green));
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--mexico-red), var(--dark-red));
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--gold-mexico), #b8860b);
+            color: var(--mexico-green);
+        }
+        
+        .numbers-container {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-top: 20px;
+        }
+        
+        .numbers-column {
+            min-width: 140px;
+        }
+        
+        .column-header {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: linear-gradient(135deg, var(--mexico-green), var(--dark-green));
+            color: white;
+            border-radius: 5px;
+            border: 1px solid var(--gold-mexico);
+        }
+        
+        .numbers-grid {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .number-item {
+            background-color: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: #2c3e50;
+        }
+        
+        .number-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 99, 65, 0.2);
+        }
+        
+        .number-item.available {
+            background: linear-gradient(135deg, #e8f5e9, white);
+            border-color: var(--mexico-green);
+            color: var(--mexico-green);
+        }
+        
+        .number-item.reserved {
+            background: linear-gradient(135deg, #ffebee, white);
+            color: var(--mexico-red);
+            border-color: var(--mexico-red);
+        }
+        
+        .number-item.paid {
+            background: linear-gradient(135deg, #e8f5e9, white);
+            color: var(--mexico-green);
+            border-color: var(--gold-mexico);
+            border-width: 2px;
+        }
+        
+        .number-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .reserved-by {
+            font-size: 0.75rem;
+            font-weight: normal;
+            opacity: 0.9;
+            margin-top: 3px;
+            word-break: break-word;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-buttons button {
+            width: auto;
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .status-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #2c3e50;
+        }
+        
+        .status-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .available-color {
+            background: var(--mexico-green);
+        }
+        
+        .reserved-color {
+            background: var(--mexico-red);
+        }
+        
+        .paid-color {
+            background: var(--gold-mexico);
+        }
+        
+        .user-reservation {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 5px solid var(--mexico-green);
+            box-shadow: 0 2px 10px rgba(0,99,65,0.1);
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .admin-actions button {
+            flex: 1;
+        }
+        
+        .columns-control {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .columns-control select {
+            flex: 1;
+        }
+        
+        .columns-control button {
+            width: auto;
+        }
+        
+        .current-user-badge {
+            background: linear-gradient(135deg, var(--mexico-green), var(--dark-green));
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            display: inline-block;
+            margin-bottom: 15px;
+            border: 2px solid var(--gold-mexico);
+            font-weight: 600;
+        }
+        
+        .price-tag {
+            background: linear-gradient(135deg, var(--gold-mexico), #b8860b);
+            color: var(--mexico-green);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+            margin-left: 10px;
+            border: 1px solid white;
+        }
+        
+        .mexican-flag-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+            color: var(--mexico-green);
+        }
+        
+        .flag-stripe {
+            width: 30px;
+            height: 20px;
+        }
+        
+        .stripe-green { background-color: var(--mexico-green); }
+        .stripe-white { background-color: white; border: 1px solid #e0e0e0; }
+        .stripe-red { background-color: var(--mexico-red); }
+        
+        .fixed-form-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 -5px 20px rgba(0, 99, 65, 0.15);
+            z-index: 100;
+            border-top: 3px solid var(--mexico-green);
+            backdrop-filter: blur(10px);
+        }
+        
+        .fixed-form-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .fixed-form-content .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .admin-number-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+            z-index: 20;
+        }
+        
+        .admin-number-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .admin-number-btn.btn-success { background: var(--mexico-green); }
+        .admin-number-btn.btn-danger { background: var(--mexico-red); }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 3px solid var(--gold-mexico);
+        }
+        
+        .modal-content h3 {
+            color: var(--mexico-green);
+            margin-bottom: 20px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-actions button { flex: 1; }
+        
+        @media (max-width: 767px) {
+            h1 { font-size: 2rem; }
+            .subtitle { font-size: 1.1rem; }
+            .fixed-form-content { flex-direction: column; }
+            .fixed-form-content .action-buttons { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sync-status" id="sync-status">🔄 Conectando...</div>
+    
+    <div class="container">
+        <header>
+            <div class="header-emojis">
+                <div>🇲🇽 🌮 🎲 🎰</div>
+                <div>🎰 🎲 🌮 🇲🇽</div>
+            </div>
+            <div class="admin-access-btn" id="admin-access-btn">⚜️</div>
+            <h1>🇲🇽 BINGO MEXICANO</h1>
+            <p class="subtitle">Sistema de Reserva de Números <span class="price-tag">$10 MXN</span></p>
+        </header>
+        
+        <div class="mexican-flag-divider">
+            <div class="flag-stripe stripe-green"></div>
+            <div class="flag-stripe stripe-white"></div>
+            <div class="flag-stripe stripe-red"></div>
+            <span style="color: var(--mexico-green); font-weight: bold;">Cada número cuesta $10 MXN</span>
+            <div class="flag-stripe stripe-green"></div>
+            <div class="flag-stripe stripe-white"></div>
+            <div class="flag-stripe stripe-red"></div>
+        </div>
+        
+        <div class="status-indicator">
+            <div class="status-item"><div class="status-color available-color"></div><span>Disponible</span></div>
+            <div class="status-item"><div class="status-color reserved-color"></div><span>Reservado</span></div>
+            <div class="status-item"><div class="status-color paid-color"></div><span>Pagado</span></div>
+        </div>
+        
+        <div id="current-user-badge-container" class="hidden">
+            <div class="current-user-badge">👤 Usuario: <span id="current-user-name-display"></span></div>
+        </div>
+        
+        <div class="columns">
+            <!-- Panel Admin -->
+            <div id="admin-panel" class="card admin-section hidden">
+                <h2>🔒 Panel de Administración</h2>
+                <div class="form-group">
+                    <label for="available-numbers">Números disponibles (separados por comas):</label>
+                    <textarea id="available-numbers" placeholder="Ej: 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15"></textarea>
+                    <button id="update-numbers" class="btn-success">Actualizar Números</button>
+                </div>
+                <div class="form-group">
+                    <label>Configuración de columnas:</label>
+                    <div class="columns-control">
+                        <select id="columns-number">
+                            <option value="1">1 Columna</option>
+                            <option value="2">2 Columnas</option>
+                            <option value="3">3 Columnas</option>
+                            <option value="4">4 Columnas</option>
+                            <option value="5">5 Columnas</option>
+                        </select>
+                        <button id="update-columns" class="btn-success">Actualizar</button>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <button id="reset-reservations" class="btn-warning">Reiniciar Juego</button>
+                    <button id="admin-logout-btn" class="btn-danger">Cerrar Sesión</button>
+                </div>
+            </div>
+            
+            <!-- Sección Usuario -->
+            <div class="card user-section">
+                <h2>🎲 RESERVA TUS NÚMEROS</h2>
+                <div style="background: rgba(0,99,65,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <p style="font-size: 1.1rem; color: var(--mexico-green);">
+                        <strong>🇲🇽 Promoción Especial:</strong> Cada número <span style="background: var(--gold-mexico); color: var(--mexico-green); padding: 3px 10px; border-radius: 15px; font-weight: bold;">$10 MXN</span>
+                    </p>
+                </div>
+                <h3>Selecciona tus Números</h3>
+                <div class="numbers-container" id="user-numbers-container"></div>
+                
+                <div id="reservation-details" class="hidden">
+                    <div class="user-reservation">
+                        <h3>🎯 Mis Reservas Activas</h3>
+                        <div class="user-reservations-list" id="user-reservations-list"></div>
+                        <div class="action-buttons">
+                            <button id="cancel-all-reservations" class="btn-danger">Cancelar Todas mis Reservas</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario flotante -->
+    <div id="name-input-section" class="fixed-form-container hidden">
+        <div class="fixed-form-content">
+            <div class="form-group">
+                <label for="user-name-input">🇲🇽 Tu nombre para reservar número <span id="selected-number-display"></span> ($10 MXN):</label>
+                <input type="text" id="user-name-input" placeholder="Ej: Juan Pérez" autocomplete="off">
+            </div>
+            <div class="action-buttons">
+                <button id="confirm-reservation" class="btn-success">✅ Confirmar</button>
+                <button id="cancel-selection" class="btn-danger">❌ Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Admin -->
+    <div id="admin-login-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3>🔐 Acceso Administrativo</h3>
+            <div class="form-group">
+                <label for="admin-password">Contraseña:</label>
+                <input type="password" id="admin-password" placeholder="Contraseña">
+            </div>
+            <div class="modal-actions">
+                <button id="admin-login-btn" class="btn-success">Acceder</button>
+                <button id="cancel-admin-login" class="btn-danger">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+
+    <script>
+        // ========== CONFIGURACIÓN FIREBASE ==========
+       // ========== CONFIGURACIÓN FIREBASE ==========
+const firebaseConfig = {
+    apiKey: "AIzaSyBxROMiuRmlwsvzfFCPyJhiQpHA2QHa7Lo",
+    authDomain: "entretenimientolinealmx.firebaseapp.com",
+    databaseURL: "https://entretenimientolinealmx-default-rtdb.firebaseio.com",
+    projectId: "entretenimientolinealmx",
+    storageBucket: "entretenimientolinealmx.firebasestorage.app",
+    messagingSenderId: "324417109651",
+    appId: "1:324417109651:web:3e2ac49a286ce81b7bd766"
+};
+
+        // ========== ESTADO GLOBAL ==========
+        const appState = {
+            columnsNumber: 1,
+            availableNumbers: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+            numbers: [],
+            reservations: [],
+            selectedNumber: null,
+            currentUserId: null,
+            currentUserName: null,
+            adminLoggedIn: false,
+            adminPassword: "mexico2024",
+            firebaseInitialized: false,
+            pricePerNumber: 10,
+            currency: "MXN"
+        };
+
+        // ========== INICIALIZAR FIREBASE ==========
+        firebase.initializeApp(firebaseConfig);
+        
+        // 🔐 PERSISTENCIA LOCAL - EL USUARIO NO PIERDE SU SESIÓN
+        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+            .then(() => {
+                return firebase.auth().signInAnonymously();
+            })
+            .then((result) => {
+                appState.currentUserId = result.user.uid;
+                appState.firebaseInitialized = true;
+                document.getElementById('sync-status').textContent = '🟢 Conectado';
+                document.getElementById('sync-status').className = 'sync-status connected';
+                
+                initializeApp();
+                startRealtimeSync();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                document.getElementById('sync-status').textContent = '🔴 Sin conexión';
+                document.getElementById('sync-status').className = 'sync-status disconnected';
+                loadFromLocalStorage();
+                initializeApp();
+            });
+
+        // ========== SINCRONIZACIÓN ==========
+        function startRealtimeSync() {
+            if (!appState.firebaseInitialized) return;
+            
+            const db = firebase.database();
+            
+            db.ref('reservations').on('value', (snapshot) => {
+                const data = snapshot.val();
+                appState.reservations = data ? Object.values(data) : [];
+                updateNumbersFromReservations();
+                renderNumbers();
+                if (appState.currentUserName) showUserReservations();
+            });
+
+            db.ref('config').on('value', (snapshot) => {
+                const config = snapshot.val();
+                if (config) {
+                    appState.columnsNumber = config.columnsNumber || 1;
+                    appState.availableNumbers = config.availableNumbers || [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+                    initializeNumbers();
+                    renderNumbers();
+                    updateNumbersEditor();
+                }
+            });
+        }
+
+        // ========== GUARDAR ==========
+        async function saveToFirebase() {
+            if (!appState.firebaseInitialized) return saveToLocalStorage();
+            
+            try {
+                const db = firebase.database();
+                const reservationsObj = {};
+                appState.reservations.forEach(r => reservationsObj[r.id] = r);
+                await db.ref('reservations').set(reservationsObj);
+                await db.ref('config').set({
+                    columnsNumber: appState.columnsNumber,
+                    availableNumbers: appState.availableNumbers
+                });
+                document.getElementById('sync-status').textContent = '🟢 Guardado';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('sync-status').textContent = '🔴 Error';
+                saveToLocalStorage();
+            }
+        }
+
+        // ========== NÚMEROS ==========
+        function initializeNumbers() {
+            appState.numbers = [];
+            for (let col = 0; col < appState.columnsNumber; col++) {
+                appState.availableNumbers.forEach(num => {
+                    appState.numbers.push({
+                        id: num,
+                        column: col,
+                        reservedBy: null,
+                        paid: false,
+                        uniqueId: `${col}-${num}`
+                    });
+                });
+            }
+            updateNumbersFromReservations();
+        }
+
+        function updateNumbersFromReservations() {
+            appState.numbers.forEach(n => { n.reservedBy = null; n.paid = false; });
+            appState.reservations.forEach(r => {
+                if (!r.cancelled) {
+                    const n = appState.numbers.find(n => n.uniqueId === r.uniqueId);
+                    if (n) {
+                        n.reservedBy = r.userName;
+                        n.paid = r.paid;
+                    }
+                }
+            });
+        }
+
+        // ========== RENDER ==========
+        function renderNumbers() {
+            const container = document.getElementById('user-numbers-container');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            for (let col = 0; col < appState.columnsNumber; col++) {
+                const colDiv = document.createElement('div');
+                colDiv.className = 'numbers-column';
+                colDiv.innerHTML = `<div class="column-header">🎲 Columna ${col + 1}</div>`;
+                
+                const grid = document.createElement('div');
+                grid.className = 'numbers-grid';
+                
+                appState.numbers.filter(n => n.column === col).forEach(num => {
+                    const el = document.createElement('div');
+                    el.className = 'number-item';
+                    
+                    if (num.reservedBy) {
+                        el.classList.add(num.paid ? 'paid' : 'reserved');
+                        el.innerHTML = `<div class="number-value">${num.id}</div>
+                                        <div class="reserved-by">${num.reservedBy}</div>
+                                        ${num.paid ? '<div style="font-size:0.7rem;">✓ PAGADO</div>' : ''}`;
+                        el.style.cursor = 'default';
+                        
+                        if (appState.adminLoggedIn) {
+                            const actions = document.createElement('div');
+                            actions.className = 'admin-number-actions';
+                            actions.innerHTML = `
+                                <button class="admin-number-btn btn-success" onclick="window.markAsPaid('${num.uniqueId}')">${num.paid ? '💰' : '✓'}</button>
+                                <button class="admin-number-btn btn-danger" onclick="window.cancelReservation('${num.uniqueId}')">✕</button>
+                            `;
+                            el.appendChild(actions);
+                        }
+                    } else {
+                        el.classList.add('available');
+                        el.innerHTML = `<div class="number-value">${num.id}</div>
+                                        <div class="reserved-by">$10 MXN</div>`;
+                        el.onclick = () => selectNumber(num.uniqueId);
+                    }
+                    
+                    grid.appendChild(el);
+                });
+                
+                colDiv.appendChild(grid);
+                container.appendChild(colDiv);
+            }
+        }
+
+        // ========== SELECCIONAR ==========
+        function selectNumber(uniqueId) {
+            const num = appState.numbers.find(n => n.uniqueId === uniqueId);
+            if (!num || num.reservedBy) return alert('No disponible');
+            
+            appState.selectedNumber = num;
+            document.getElementById('selected-number-display').textContent = num.id;
+            document.getElementById('user-name-input').value = appState.currentUserName || '';
+            document.getElementById('name-input-section').classList.remove('hidden');
+            document.getElementById('reservation-details').classList.add('hidden');
+        }
+
+        function cancelSelection() {
+            appState.selectedNumber = null;
+            document.getElementById('name-input-section').classList.add('hidden');
+        }
+
+        // ========== CONFIRMAR RESERVA ==========
+        window.confirmReservation = async function() {
+            const name = document.getElementById('user-name-input').value.trim();
+            if (!name) return alert('Ingresa tu nombre');
+            
+            const user = firebase.auth().currentUser;
+            if (!user) return alert('Error de conexión');
+            if (!appState.selectedNumber) return;
+            
+            const num = appState.selectedNumber;
+            if (num.reservedBy) return alert('Ya reservado');
+            
+            const reservation = {
+                id: Date.now(),
+                numberId: num.id,
+                column: num.column,
+                uniqueId: num.uniqueId,
+                userId: user.uid,
+                userName: name,
+                timestamp: new Date().toISOString(),
+                paid: false,
+                cancelled: false,
+                price: appState.pricePerNumber,
+                currency: appState.currency
+            };
+            
+            appState.reservations.push(reservation);
+            num.reservedBy = name;
+            appState.currentUserId = user.uid;
+            appState.currentUserName = name;
+            
+            await saveToFirebase();
+            renderNumbers();
+            cancelSelection();
+            showUserReservations();
+            updateCurrentUserBadge();
+            alert(`✅ Reservaste el número ${num.id}`);
+        };
+
+        // ========== MOSTRAR RESERVAS ==========
+        function showUserReservations() {
+            const user = firebase.auth().currentUser;
+            if (!user || !appState.currentUserName) return;
+            
+            const userReservations = appState.reservations.filter(r => 
+                r.userId === user.uid && !r.cancelled
+            );
+            
+            const list = document.getElementById('user-reservations-list');
+            const details = document.getElementById('reservation-details');
+            if (!list || !details) return;
+            
+            list.innerHTML = '';
+            
+            if (userReservations.length === 0) {
+                details.classList.add('hidden');
+                return;
+            }
+            
+            userReservations.forEach(r => {
+                const div = document.createElement('div');
+                div.className = 'user-reservation-item';
+                div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px; margin-bottom:8px; background:rgba(0,99,65,0.05); border-radius:6px; border-left:4px solid var(--mexico-green);';
+                if (r.paid) div.style.background = 'rgba(212,175,55,0.1)';
+                
+                div.innerHTML = `
+                    <div>
+                        <strong>🎲 Número: ${r.numberId}</strong><br>
+                        <small>${new Date(r.timestamp).toLocaleString()}</small><br>
+                        <span style="color: var(--mexico-green);">$${appState.pricePerNumber} MXN</span>
+                        ${r.paid ? '<br><span style="color: var(--mexico-green);">✓ PAGADO</span>' : ''}
+                    </div>
+                    <div class="action-buttons">
+                        ${!r.paid ? 
+                            `<button class="btn-danger" onclick="window.cancelUserReservation(${r.id})">Cancelar</button>` : 
+                            '<span style="color: #999;">No cancelable</span>'}
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+            
+            details.classList.remove('hidden');
+        }
+
+        // ========== CANCELAR (USUARIO) ==========
+        window.cancelUserReservation = async function(reservationId) {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+            
+            const r = appState.reservations.find(r => r.id === reservationId);
+            if (!r || r.userId !== user.uid) return alert('No puedes cancelar esta reserva');
+            if (r.paid) return alert('No se puede cancelar una reserva pagada');
+            
+            r.cancelled = true;
+            const num = appState.numbers.find(n => n.uniqueId === r.uniqueId);
+            if (num) { num.reservedBy = null; num.paid = false; }
+            
+            await saveToFirebase();
+            renderNumbers();
+            showUserReservations();
+        };
+
+        // ========== CANCELAR TODAS ==========
+        window.cancelAllUserReservations = async function() {
+            const user = firebase.auth().currentUser;
+            if (!user) return;
+            
+            const toCancel = appState.reservations.filter(r => 
+                r.userId === user.uid && !r.cancelled && !r.paid
+            );
+            
+            if (!toCancel.length) return alert('No tienes reservas para cancelar');
+            if (!confirm(`¿Cancelar ${toCancel.length} reservas?`)) return;
+            
+            toCancel.forEach(r => {
+                r.cancelled = true;
+                const num = appState.numbers.find(n => n.uniqueId === r.uniqueId);
+                if (num) { num.reservedBy = null; num.paid = false; }
+            });
+            
+            await saveToFirebase();
+            renderNumbers();
+            showUserReservations();
+        };
+
+        // ========== ADMIN ==========
+        window.markAsPaid = async function(uniqueId) {
+            if (!appState.adminLoggedIn) return alert('Acceso denegado');
+            const r = appState.reservations.find(r => r.uniqueId === uniqueId && !r.cancelled);
+            if (r) {
+                r.paid = !r.paid;
+                const num = appState.numbers.find(n => n.uniqueId === uniqueId);
+                if (num) num.paid = r.paid;
+                await saveToFirebase();
+                renderNumbers();
+                showUserReservations();
+            }
+        };
+
+        window.cancelReservation = async function(uniqueId) {
+            if (!appState.adminLoggedIn) return alert('Acceso denegado');
+            const r = appState.reservations.find(r => r.uniqueId === uniqueId && !r.cancelled);
+            if (r && confirm(`Cancelar reserva de ${r.userName}?`)) {
+                r.cancelled = true;
+                const num = appState.numbers.find(n => n.uniqueId === uniqueId);
+                if (num) { num.reservedBy = null; num.paid = false; }
+                await saveToFirebase();
+                renderNumbers();
+                showUserReservations();
+            }
+        };
+
+        // ========== ADMIN LOGIN ==========
+        document.getElementById('admin-access-btn').onclick = () => {
+            document.getElementById('admin-login-modal').classList.remove('hidden');
+        };
+        
+        document.getElementById('admin-login-btn').onclick = () => {
+            const pwd = document.getElementById('admin-password').value;
+            if (pwd === appState.adminPassword) {
+                appState.adminLoggedIn = true;
+                document.getElementById('admin-panel').classList.remove('hidden');
+                document.getElementById('admin-login-modal').classList.add('hidden');
+                renderNumbers();
+                alert('✅ Acceso concedido');
+            } else {
+                alert('❌ Contraseña incorrecta');
+            }
+        };
+        
+        document.getElementById('admin-logout-btn').onclick = () => {
+            appState.adminLoggedIn = false;
+            document.getElementById('admin-panel').classList.add('hidden');
+            renderNumbers();
+        };
+        
+        document.getElementById('cancel-admin-login').onclick = () => {
+            document.getElementById('admin-login-modal').classList.add('hidden');
+        };
+
+        // ========== FUNCIONES ADMIN ==========
+        async function updateAvailableNumbers() {
+            if (!appState.adminLoggedIn) return alert('Acceso denegado');
+            const input = document.getElementById('available-numbers');
+            const nums = input.value.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+            if (nums.length) {
+                appState.availableNumbers = [...new Set(nums)].sort((a,b) => a - b);
+                initializeNumbers();
+                await saveToFirebase();
+                renderNumbers();
+                alert('✅ Números actualizados');
+            }
+        }
+
+        async function updateColumnsNumber() {
+            if (!appState.adminLoggedIn) return alert('Acceso denegado');
+            const cols = parseInt(document.getElementById('columns-number').value);
+            if (cols > 0 && cols <= 5) {
+                appState.columnsNumber = cols;
+                initializeNumbers();
+                await saveToFirebase();
+                renderNumbers();
+                alert(`✅ ${cols} columnas`);
+            }
+        }
+
+        async function resetAllReservations() {
+            if (!appState.adminLoggedIn) return alert('Acceso denegado');
+            if (confirm('¿Reiniciar TODAS las reservas?')) {
+                appState.reservations = [];
+                appState.currentUserName = null;
+                appState.currentUserId = null;
+                initializeNumbers();
+                await saveToFirebase();
+                renderNumbers();
+                document.getElementById('reservation-details').classList.add('hidden');
+                document.getElementById('current-user-badge-container').classList.add('hidden');
+                alert('✅ Juego reiniciado');
+            }
+        }
+
+        function updateNumbersEditor() {
+            document.getElementById('available-numbers').value = appState.availableNumbers.join(', ');
+            document.getElementById('columns-number').value = appState.columnsNumber;
+        }
+
+        function updateCurrentUserBadge() {
+            const container = document.getElementById('current-user-badge-container');
+            const display = document.getElementById('current-user-name-display');
+            if (appState.currentUserName) {
+                display.textContent = appState.currentUserName;
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        // ========== LOCAL STORAGE ==========
+        function saveToLocalStorage() {
+            localStorage.setItem('reservationApp', JSON.stringify({
+                columnsNumber: appState.columnsNumber,
+                availableNumbers: appState.availableNumbers,
+                numbers: appState.numbers,
+                reservations: appState.reservations,
+                currentUserName: appState.currentUserName
+            }));
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('reservationApp');
+            if (saved) {
+                const p = JSON.parse(saved);
+                appState.columnsNumber = p.columnsNumber || 1;
+                appState.availableNumbers = p.availableNumbers || [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+                appState.numbers = p.numbers || [];
+                appState.reservations = p.reservations || [];
+                appState.currentUserName = p.currentUserName || null;
+            }
+        }
+
+        // ========== INICIALIZAR ==========
+        function initializeApp() {
+            initializeNumbers();
+            
+            // Event listeners
+            document.getElementById('confirm-reservation').onclick = window.confirmReservation;
+            document.getElementById('cancel-selection').onclick = cancelSelection;
+            document.getElementById('update-numbers').onclick = updateAvailableNumbers;
+            document.getElementById('update-columns').onclick = updateColumnsNumber;
+            document.getElementById('reset-reservations').onclick = resetAllReservations;
+            document.getElementById('cancel-all-reservations').onclick = window.cancelAllUserReservations;
+            
+            // Enter en inputs
+            document.getElementById('user-name-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') window.confirmReservation();
+            });
+            document.getElementById('admin-password').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') document.getElementById('admin-login-btn').click();
+            });
+            
+            document.getElementById('admin-panel').classList.add('hidden');
+            
+            updateNumbersEditor();
+            renderNumbers();
+            updateCurrentUserBadge();
+            if (appState.currentUserName) showUserReservations();
+        }
+    </script>
+</body>
+</html>
